@@ -3,7 +3,7 @@ from mesa import Model
 from mesa.space import MultiGrid
 from mesa.time import RandomActivation
 
-from ants.agents import AntAgent, ParticleAgent
+from blatt1.ants.agents import AntAgent, ParticleAgent
 
 
 class AntModel(Model):

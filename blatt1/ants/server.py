@@ -3,8 +3,8 @@ from mesa.visualization.modules import (
     CanvasGrid
 )
 from mesa.visualization.UserParam import UserSettableParameter
-from ants.agents import AntAgent, ParticleAgent
-from ants.model import AntModel
+from blatt1.ants.agents import AntAgent, ParticleAgent
+from blatt1.ants.model import AntModel
 
 
 def agent_portrayal(agent):
