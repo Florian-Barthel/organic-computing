@@ -50,7 +50,7 @@ class AntClustering(Model):
         for x in range(width):
             for y in range(height):
                 if self.random.random() < self.density:
-                    particle = Particle(p_id, self)
+                    particle = Particle(p_id, (x, y), self)
                     self.grid.place_agent(particle, (x, y))
                     p_id += 1
 

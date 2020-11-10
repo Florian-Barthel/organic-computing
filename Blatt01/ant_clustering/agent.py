@@ -19,7 +19,7 @@ class Ant(Agent):
             self.pick_up_particle(self.random.choice(close_particles))
             self.random_move(self.j)
         elif self.carrying_particle and close_particles:
-            empty_place_nearby = self.get_empty_place_nearby()
+            empty_place_nearby = self.get_empty_place_nearby(self.random.choice(close_particles))
             self.drop_particle(empty_place_nearby)
             self.random_move(self.j)
         else:
@@ -44,9 +44,9 @@ class Ant(Agent):
                 particles.append(n)
         return particles
 
-    def get_empty_place_nearby(self):
+    def get_empty_place_nearby(self, particle):
         empty_neighbours = []
-        neighbourhood = self.model.grid.get_neighborhood(self.pos, moore=True, include_center=False, radius=self.j)
+        neighbourhood = self.model.grid.get_neighborhood(particle.pos, moore=True, include_center=False, radius=1)
         for cell in neighbourhood:
             if self.model.grid.is_cell_empty(cell):
                 empty_neighbours.append(cell)
@@ -64,6 +64,7 @@ class Ant(Agent):
 
 class Particle(Agent):
 
-    def __init__(self, unique_id, model):
+    def __init__(self, unique_id, pos, model):
         super().__init__(unique_id, model)
         self.unique_id = unique_id
+        self.pos = pos

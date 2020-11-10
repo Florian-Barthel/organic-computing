@@ -24,7 +24,7 @@ model_params = {
     "ants": UserSettableParameter("slider", "Number of ants", value=100, min_value=1, max_value=1000, step=1),
     "density": UserSettableParameter("slider", "Particle density", value=0.22, min_value=0.01, max_value=1.0, step=.01),
     "s": UserSettableParameter("slider", "Ant step size", value=1, min_value=1, max_value=5, step=1),
-    "j": UserSettableParameter("slider", "Ant jump distance", value=2, min_value=1, max_value=10, step=1),
+    "j": UserSettableParameter("slider", "Ant jump distance", value=5, min_value=1, max_value=10, step=1),
     "distribution": UserSettableParameter("choice", "Initial distribution of ants", value="random", choices=["random",
                                                                                                              "center"])
 }
