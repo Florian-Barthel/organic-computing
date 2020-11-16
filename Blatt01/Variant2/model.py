@@ -48,31 +48,39 @@ class AntModel(Model):
         self.step_size = step_size
         self.jump_size = jump_size
         self.iteration_counter = 0
+        self.free_particles = []
 
-        # Create agents
-        for i in range(self.num_agents):
+        num_particles = int(self.grid.width * self.grid.height *
+                            particle_density)
+        self.num_particles = num_particles
+
+        particles_for_ants = []
+
+        # create particle agents
+        for i in range(num_particles):
+            p_type = self.random.randrange(3)
+
+            p = ParticleAgent(i, self, PARTICLE_TYPE[p_type])
+            self.schedule.add(p)
+
+            if len(particles_for_ants) >= self.num_agents:
+                self.grid.place_agent(p, self.grid.find_empty())
+                self.free_particles.append(p)
+            else:
+                particles_for_ants.append(p)
+
+        # Create ant agents
+        for i in range(num_particles, num_particles + self.num_agents):
             a = AntAgent(i, self)
             self.schedule.add(a)
 
             if (all_in_center):
-                x = 25
-                y = 25
+                self.grid.place_agent(a, (25, 25))
             else:
-                x = self.random.randrange(self.grid.width)
-                y = self.random.randrange(self.grid.height)
-            self.grid.place_agent(a, (x, y))
+                self.grid.place_agent(a, self.grid.find_empty())
 
-        num_particles = self.grid.width * self.grid.height * particle_density
-        self.num_particles = num_particles
-
-        for i in range(self.num_agents, self.num_agents + int(num_particles)):
-            x = self.random.randrange(self.grid.width)
-            y = self.random.randrange(self.grid.height)
-            p_type = self.random.randrange(3)
-
-            p = ParticleAgent(i, self, PARTICLE_TYPE(p_type))
-            self.schedule.add(p)
-            self.grid.place_agent(p, (x, y))
+            a.storage = particles_for_ants[i - num_particles]  # pick up obj
+            a.is_laden = True
 
         self.datacollector = DataCollector(
             model_reporters={"Particles with neighbors":

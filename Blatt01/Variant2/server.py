@@ -37,7 +37,7 @@ chart2 = ChartModule([{"Label": "Particles with neighbors percentage",
 server = ModularServer(AntModel,
                        [grid, chart1, chart2],
                        "Ant Model",
-                       {"N": 1, "particle_density": 0.2,
+                       {"N": 100, "particle_density": 0.2,
                         "step_size": 1, "jump_size": 3,
                         "all_in_center": False})
 

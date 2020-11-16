@@ -1,16 +1,18 @@
-from numpy import linalg
+from numpy import linalg, asarray
 
 
-def neighborhood_func(i, j):
+def neighborhood_func(i, j, alt_pos = None):
     """ i = sampled particle, j = all other particles in ant's proximity """
 
-    alpha = 1.0
-    sigma_sq = 9
-    coeff = 1 / sigma_sq
+    alpha = 0.1
+    sigma_sq = 9.0
+    coeff = 1.0 / sigma_sq
     arg_sum = 0.0
 
     for m in j:
-        constraint = (1 - (distance_func(i, m) / alpha))
+
+        constraint = (1.0 - (distance_func(i, m, alt_pos) / alpha))
+
         if constraint > 0:
             arg_sum += constraint
         else:
@@ -21,15 +23,21 @@ def neighborhood_func(i, j):
     return f_i
 
 
-def distance_func(i, m):
+def distance_func(i, m, alt_pos):
     """ i = particle 1, m = particle 2 """
 
-    return linalg.norm(i.pos - m.pos)
+    i_pos = None
+    if i.pos is None:
+        i_pos = alt_pos
+    else:
+        i_pos = i.pos
+
+    return linalg.norm(asarray(i_pos) - asarray(m.pos))
 
 
 def p_pick(i, j):
-    """ i = particle 1, m = j = all other particles in ant's proximity """
-
+    """ i = particle 1, j = all other particles in ant's proximity """
+    print("test1")
     # k_plus = 0.1
     f_i = neighborhood_func(i, j)
 
@@ -41,11 +49,12 @@ def p_pick(i, j):
     # (k_plus / (k_plus + neighborhood_func(i, j))) ** 2
 
 
-def p_drop(i, j):
-    """ i = particle 1, m = j = all other particles in ant's proximity """
+def p_drop(i, j, alt_pos):
+    """ i = particle 1, j = all other particles in ant's proximity,
+    alt_pos = own position in case i is the currently carried particle with no position """
 
     # k_minus = 0.3
-    f_i = neighborhood_func(i, j)
+    f_i = neighborhood_func(i, j, alt_pos)
 
     if (f_i >= 1.0):
         return 1.0

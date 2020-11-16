@@ -1,4 +1,5 @@
 from mesa import Agent
+from functions import p_drop, p_pick
 
 
 PARTICLE_TYPE = ['Leaf', 'Nut', 'Stone']
@@ -11,7 +12,7 @@ class AntAgent(Agent):
         super().__init__(unique_id, model)
         self.is_laden = False
         self.storage = None
-        self.debug = False
+        self.debug = True
 
     def move(self, length):
         possible_steps = self.model.grid.get_neighborhood(
@@ -24,20 +25,32 @@ class AntAgent(Agent):
         self.model.grid.move_agent(self, new_position)
 
     def step(self):
-        if not self.is_laden and self.is_occupied_by_particle():
+        self.move(self.model.step_size)  # make steps in random direction
+
+        drop_item = p_drop(self.storage, self.get_all_surrounding_particles(), self.pos)
+        # print(drop_item)
+
+        if drop_item > 0:
             if self.debug:
                 print("Agent #" + str(self.unique_id) +
-                      " is not laden, picks up object and jumps")
+                      " wants to drop item")
+
+            if not self.is_occupied_by_particle():
+                self.drop_particle_locally()
+            else:
+                self.drop_particle_nearby()
+
+            pick = 0
+            while pick > 0:
+                print("test")
+                p_rnd_tgt = self.get_random_particle()  # get random particle
+                print("test2")
+                self.model.grid.move_agent(self, p_rnd_tgt.pos)  # jump to particle
+                print("RndP: " + str(p_rnd_tgt))
+                pick = p_pick(p_rnd_tgt, self.get_all_surrounding_particles())
+                print(pick)
+
             self.pickup_particle()
-            self.move(self.model.jump_size)  # jump j steps in random direction
-        elif self.is_laden and self.is_occupied_by_particle():
-            if self.debug:
-                print("Agent #" + str(self.unique_id) +
-                      " is laden, drops object and jumps")
-            self.drop_particle_nearby()  # look for empty place and drop obj
-            self.move(self.model.jump_size)  # jump j steps in random direction
-        else:
-            self.move(self.model.step_size)  # make steps in random direction
 
     def is_occupied_by_particle(self):
         cell_content = self.model.grid.get_cell_list_contents([self.pos])
@@ -48,12 +61,18 @@ class AntAgent(Agent):
             return False
 
     def get_local_particle(self):
-        cell_content = self.model.grid.get_cell_list_contents([self.pos])
+        return next(self.get_all_local_particles)
 
-        return next(filter(lambda c: isinstance(c, ParticleAgent),
-                    cell_content))
+    def get_all_surrounding_particles(self):
+        cell_contents = self.model.grid.get_neighbors(
+            self.pos,
+            moore=True,
+            include_center=True)
 
-    def drop_particle_nearby(self):
+        return list(filter(lambda c: isinstance(c, ParticleAgent),
+                    cell_contents))
+
+    def drop_particle_nearby(self):  # if center-spot is first, then combine functions
         possible_steps = self.model.grid.get_neighborhood(
             self.pos,
             moore=True,
@@ -65,6 +84,13 @@ class AntAgent(Agent):
 
         new_position = self.random.choice(possible_steps)
         self.model.grid.place_agent(self.storage, new_position)
+        self.model.free_particles.append(self.storage)
+        self.storage = None
+        self.is_laden = False
+
+    def drop_particle_locally(self):
+        self.model.grid.place_agent(self.storage, self.pos)
+        self.model.free_particles.append(self.storage)
         self.storage = None
         self.is_laden = False
 
@@ -72,6 +98,10 @@ class AntAgent(Agent):
         self.storage = self.get_local_particle()  # pick up obj
         self.model.grid.remove_agent(self.storage)  # remove particle
         self.is_laden = True
+        self.model.free_particles.remove(self.storage)
+
+    def get_random_particle(self):
+        return self.model.free_particles[self.random.randrange(len(self.model.free_particles))]
 
 
 class ParticleAgent(Agent):
