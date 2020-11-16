@@ -1,4 +1,4 @@
-from mesa.visualization.modules import CanvasGrid, ChartModule
+from mesa.visualization.modules import CanvasGrid
 from mesa.visualization.ModularVisualization import ModularServer
 from mesa.visualization.UserParam import UserSettableParameter
 
@@ -12,8 +12,12 @@ def agent_portrayal(agent):
     portrayal = {}
     if isinstance(agent, Ant):
         portrayal = {"Shape": "rect", "w": .8, "h": .8, "Color": "Red", "Filled": "true", "Layer": 0}
-    if isinstance(agent, Particle):
-        portrayal = {"Shape": "circle", "r": .2, "Color": "Blue", "Filled": "true", "Layer": 1}
+    if isinstance(agent, Particle) and agent.type == 'Leaf':
+        portrayal = {"Shape": "circle", "r": .4, "Color": "Green", "Filled": "true", "Layer": 1}
+    if isinstance(agent, Particle) and agent.type == 'Nut':
+        portrayal = {"Shape": "circle", "r": .2, "Color": "Brown", "Filled": "true", "Layer": 1}
+    if isinstance(agent, Particle) and agent.type == 'Pebble':
+        portrayal = {"Shape": "circle", "r": .3, "Color": "Grey", "Filled": "true", "Layer": 1}
     return portrayal
 
 
@@ -22,7 +26,7 @@ model_params = {
     "height": 50,
     "width": 50,
     "ants": UserSettableParameter("slider", "Number of ants", value=100, min_value=1, max_value=1000, step=1),
-    "density": UserSettableParameter("slider", "Particle density", value=0.22, min_value=0.01, max_value=1.0, step=.01),
+    "density": UserSettableParameter("slider", "Object density", value=0.22, min_value=0.01, max_value=1.0, step=.01),
     "s": UserSettableParameter("slider", "Ant step size", value=1, min_value=1, max_value=5, step=1),
     "j": UserSettableParameter("slider", "Ant jump distance", value=5, min_value=1, max_value=10, step=1),
     "distribution": UserSettableParameter("choice", "Initial distribution of ants", value="random", choices=["random",
@@ -30,10 +34,10 @@ model_params = {
 }
 
 # set the portrayal function and size of the canvas for visualization
-canvas = CanvasGrid(agent_portrayal, 50, 50, 500, 500)
+canvas_element = CanvasGrid(agent_portrayal, 50, 50, 500, 500)
 
 # create instance of Mesa ModularServer
 server = ModularServer(
-    AntClustering, [canvas], "Ant Clustering", model_params
+    AntClustering, [canvas_element], "Ant Clustering", model_params
 )
 

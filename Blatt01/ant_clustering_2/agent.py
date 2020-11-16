@@ -37,12 +37,12 @@ class Ant(Agent):
         """
         Returns a list of particles on neighbouring cells (Moore neighbourhood with radius 1).
         """
-        particles = []
+        objects = []
         neighbours = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False, radius=1)
         for n in neighbours:
             if isinstance(n, Particle):
-                particles.append(n)
-        return particles
+                objects.append(n)
+        return objects
 
     def get_empty_place_nearby(self, particle):
         empty_neighbours = []
@@ -64,10 +64,8 @@ class Ant(Agent):
 
 class Particle(Agent):
 
-    def __init__(self, unique_id, pos, model):
+    def __init__(self, unique_id, pos, type, model):
         super().__init__(unique_id, model)
         self.unique_id = unique_id
         self.pos = pos
-
-    def step(self):
-        pass
+        self.type = type

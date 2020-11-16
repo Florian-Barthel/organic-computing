@@ -45,16 +45,16 @@ class AntClustering(Model):
             # add the Ant to the model schedule
             self.schedule.add(ant)
 
-        # Place a particle in each cell with Prob = density
+        # Place an object in each cell with Prob = density
         p_id = 0
-        self.particles = list()
         for x in range(width):
             for y in range(height):
                 if self.random.random() < self.density:
-                    particle = Particle(p_id, (x, y), self)
+                    objects = ['Leaf', 'Nut', 'Pebble']
+                    particle = Particle(p_id, (x, y), self.random.choice(objects), self)
                     self.grid.place_agent(particle, (x, y))
-                    self.particles.append(particle)
                     p_id += 1
+
         self.running = True
 
     def step(self):
