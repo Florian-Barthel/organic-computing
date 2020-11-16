@@ -39,10 +39,10 @@ def get_num_particles_with_neigbors_percent(model):
 class AntModel(Model):
     """A model with some number of agents."""
 
-    def __init__(self, N, particle_density, step_size, jump_size,
+    def __init__(self, num_ants, particle_density, step_size, jump_size,
                  all_in_center):
         super().__init__()
-        self.num_agents = N
+        self.num_agents = num_ants
         self.grid = MultiGrid(50, 50, True)
         self.schedule = RandomActivation(self)
         self.step_size = step_size
@@ -54,7 +54,7 @@ class AntModel(Model):
             a = AntAgent(i, self)
             self.schedule.add(a)
 
-            if (all_in_center):
+            if all_in_center == "Yes":
                 x = 25
                 y = 25
             else:
