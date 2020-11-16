@@ -5,7 +5,7 @@ from mesa.datacollection import DataCollector
 from agents import AntAgent, ParticleAgent, PARTICLE_TYPE
 
 
-def get_num_particles_with_neigbors(model):
+def get_num_particles_with_neighbors(model):
     all_particles = list(filter(lambda a: type(a) is ParticleAgent,
                                 model.schedule.agents))
 
@@ -28,26 +28,23 @@ def get_num_particles_with_neigbors(model):
     return num_particles_with_neighbors
 
 
-def get_num_particles_with_neigbors_percent(model):
-    num_particles_with_neighbors = get_num_particles_with_neigbors(model)
+def get_num_particles_with_neighbors_percent(model):
+    num_particles_with_neighbors = get_num_particles_with_neighbors(model)
     num_total_particles = len(list(filter(lambda a: type(a) is ParticleAgent,
                                           model.schedule.agents)))
 
-    return (num_particles_with_neighbors / num_total_particles) * 100
+    return (num_particles_with_neighbors / len(model.free_particles)) * 100
 
 
 class AntModel(Model):
     """A model with some number of agents."""
 
-    def __init__(self, N, particle_density, step_size, jump_size,
-                 all_in_center):
+    def __init__(self, num_ants, particle_density, step_size, all_in_center):
         super().__init__()
-        self.num_agents = N
+        self.num_agents = num_ants
         self.grid = MultiGrid(50, 50, True)
         self.schedule = RandomActivation(self)
         self.step_size = step_size
-        self.jump_size = jump_size
-        self.iteration_counter = 0
         self.free_particles = []
 
         num_particles = int(self.grid.width * self.grid.height *
@@ -74,7 +71,7 @@ class AntModel(Model):
             a = AntAgent(i, self)
             self.schedule.add(a)
 
-            if (all_in_center):
+            if all_in_center == 'Yes':
                 self.grid.place_agent(a, (25, 25))
             else:
                 self.grid.place_agent(a, self.grid.find_empty())
@@ -84,13 +81,10 @@ class AntModel(Model):
 
         self.datacollector = DataCollector(
             model_reporters={"Particles with neighbors":
-                             get_num_particles_with_neigbors,
+                             get_num_particles_with_neighbors,
                              "Particles with neighbors percentage":
-                                 get_num_particles_with_neigbors_percent})
+                                 get_num_particles_with_neighbors_percent})
 
     def step(self):
         self.schedule.step()
         self.datacollector.collect(self)
-        self.iteration_counter += 1
-        if self.iteration_counter == 5000:
-            exit(0)

@@ -12,7 +12,7 @@ class AntAgent(Agent):
         super().__init__(unique_id, model)
         self.is_laden = False
         self.storage = None
-        self.debug = True
+        self.debug = False
 
     def move(self, length):
         possible_steps = self.model.grid.get_neighborhood(
@@ -28,12 +28,11 @@ class AntAgent(Agent):
         self.move(self.model.step_size)  # make steps in random direction
 
         drop_item = p_drop(self.storage, self.get_all_surrounding_particles(), self.pos)
-        # print(drop_item)
 
-        if drop_item > 0:
+        if self.random.random() <= drop_item * 100:
             if self.debug:
                 print("Agent #" + str(self.unique_id) +
-                      " wants to drop item")
+                      " wants to drop a " + self.storage.particle_type)
 
             if not self.is_occupied_by_particle():
                 self.drop_particle_locally()
@@ -41,16 +40,16 @@ class AntAgent(Agent):
                 self.drop_particle_nearby()
 
             pick = 0
-            while pick > 0:
-                print("test")
+            while pick == 0:
                 p_rnd_tgt = self.get_random_particle()  # get random particle
-                print("test2")
                 self.model.grid.move_agent(self, p_rnd_tgt.pos)  # jump to particle
-                print("RndP: " + str(p_rnd_tgt))
                 pick = p_pick(p_rnd_tgt, self.get_all_surrounding_particles())
-                print(pick)
 
             self.pickup_particle()
+
+            if self.debug:
+                print("Agent #" + str(self.unique_id) +
+                      " picked up a " + self.storage.particle_type)
 
     def is_occupied_by_particle(self):
         cell_content = self.model.grid.get_cell_list_contents([self.pos])
@@ -61,13 +60,14 @@ class AntAgent(Agent):
             return False
 
     def get_local_particle(self):
-        return next(self.get_all_local_particles)
+        return self.get_all_surrounding_particles()[0]
 
     def get_all_surrounding_particles(self):
         cell_contents = self.model.grid.get_neighbors(
             self.pos,
             moore=True,
-            include_center=True)
+            include_center=True,
+            radius=1)
 
         return list(filter(lambda c: isinstance(c, ParticleAgent),
                     cell_contents))
