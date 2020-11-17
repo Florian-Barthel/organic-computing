@@ -1,10 +1,11 @@
 from mesa.visualization.ModularVisualization import ModularServer
 from mesa.visualization.modules import (
-    CanvasGrid
+    CanvasGrid,
+    ChartModule
 )
 from mesa.visualization.UserParam import UserSettableParameter
-from blatt1.ants.agents import AntAgent, ParticleAgent
-from blatt1.ants.model import AntModel
+from blatt1.aufgabe1.ants.agents import AntAgent, ParticleAgent
+from blatt1.aufgabe1.ants.model import AntModel
 
 
 def agent_portrayal(agent):
@@ -75,10 +76,16 @@ model_params = {
 # set the portrayal function and size of the canvas for visualization
 canvas_element = CanvasGrid(agent_portrayal, 50, 50, 700, 700)
 
+line_chart = ChartModule(
+    [
+        {"Label": "percentage of isolated particles", "Color": "#aa3333"}
+    ]
+)
+
 # create instance of Mesa ModularServer
 server = ModularServer(
     AntModel,
-    [canvas_element],
+    [canvas_element, line_chart],
     "Ant Simulation",
     model_params=model_params,
 )

@@ -12,7 +12,7 @@ class AntAgent(Agent):
         if not self.loaded_particle and self.close_particles():
             self.pick_up_particle(self.random.choice(self.close_particles()))
             self.jump()
-        elif self.loaded_particle and self.close_particles() and self.empty_neighbors():
+        elif self.loaded_particle and self.on_top_of_particle() and self.empty_neighbors():
             empyt_cell = self.random.choice(self.empty_neighbors())
             self.drop_particle(empyt_cell)
             self.jump()
@@ -22,7 +22,7 @@ class AntAgent(Agent):
     def move(self):
         possible_steps = self.model.grid.get_neighborhood(
             self.pos,
-            moore=False,
+            moore=True,
             include_center=False,
             radius=self.step_size
         )
@@ -33,9 +33,9 @@ class AntAgent(Agent):
         particles = []
         neighborhood = self.model.grid.get_neighbors(
             self.pos,
-            moore=False,
+            moore=True,
             include_center=False,
-            radius=self.jump_size
+            radius=1
         )
         for neighbor in neighborhood:
             if isinstance(neighbor, ParticleAgent):
@@ -45,7 +45,7 @@ class AntAgent(Agent):
     def jump(self):
         possible_steps = self.model.grid.get_neighborhood(
             self.pos,
-            moore=False,
+            moore=True,
             include_center=False,
             radius=self.jump_size
         )
@@ -56,8 +56,8 @@ class AntAgent(Agent):
         self.loaded_particle = particle
         self.model.grid.remove_agent(particle)
 
-    def drop_particle(self, empty_cell):
-        self.model.grid.place_agent(self.loaded_particle, empty_cell)
+    def drop_particle(self, pos):
+        self.model.grid.place_agent(self.loaded_particle, pos)
         self.loaded_particle = None
 
     def empty_neighbors(self):
@@ -66,13 +66,15 @@ class AntAgent(Agent):
             self.pos,
             moore=False,
             include_center=False,
-            radius=self.step_size
+            radius=1
         )
         for cell in neighborhood:
             if self.model.grid.is_cell_empty(cell):
                 empty_cells.append(cell)
         return empty_cells
 
+    def on_top_of_particle(self):
+        return any(isinstance(c, ParticleAgent) for c in self.model.grid[self.pos[0]][self.pos[1]])
 
 class ParticleAgent(Agent):
     def __init__(self, unique_id, model):
