@@ -52,7 +52,7 @@ model_params = {
     ),
     "jump_size": UserSettableParameter(
         "slider",
-        "Ant Step Size",
+        "Ant Jump Size",
         value=4,
         min_value=1,
         max_value=10,
@@ -68,16 +68,12 @@ model_params = {
 
 grid = CanvasGrid(agent_portrayal, 50, 50, 700, 700)
 
-chart1 = ChartModule([{"Label": "Particles with neighbors",
-                       "Color": "Black"}],
-                     data_collector_name='datacollector')
-
-chart2 = ChartModule([{"Label": "Particles with neighbors percentage",
-                       "Color": "Black"}],
-                     data_collector_name='datacollector')
+chart = ChartModule([{"Label": "Particles with neighbors percentage",
+                      "Color": "Black"}],
+                    data_collector_name='datacollector')
 
 server = ModularServer(AntModel,
-                       [grid, chart1, chart2],
+                       [grid, chart],
                        "Ant Model",
                        model_params=model_params)
 

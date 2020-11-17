@@ -11,7 +11,7 @@ def neighborhood_func(i, j, alt_pos=None):
 
     for m in j:
 
-        constraint = (1.0 - (distance_func(i, m, alt_pos) / alpha))
+        constraint = (1.0 - (dissimilarity_func(i, m, alt_pos) / alpha))
 
         if constraint > 0:
             arg_sum += constraint
@@ -23,7 +23,7 @@ def neighborhood_func(i, j, alt_pos=None):
     return f_i
 
 
-def distance_func(i, m, alt_pos):
+def dissimilarity_func(i, m, alt_pos):
     """ i = particle 1, m = particle 2
      alt_pos = own position in case i is the currently carried particle with no position """
 
@@ -33,7 +33,8 @@ def distance_func(i, m, alt_pos):
     else:
         i_pos = i.pos
 
-    dist = linalg.norm(asarray(i_pos) - asarray(m.pos)) - int(i.particle_type == m.particle_type)
+    # dist = linalg.norm(asarray(i_pos) - asarray(m.pos)) - int(i.particle_type == m.particle_type)
+    dist = 1 - int(i.particle_type == m.particle_type)
     return dist
 
 
