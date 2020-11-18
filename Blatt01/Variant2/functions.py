@@ -1,7 +1,7 @@
 from numpy import linalg, asarray
 
 
-def neighborhood_func(i, j, alt_pos=None):
+def neighborhood_func(i, j):
     """ i = sampled particle, j = all other particles in ant's proximity """
 
     alpha = 0.9
@@ -11,7 +11,7 @@ def neighborhood_func(i, j, alt_pos=None):
 
     for m in j:
 
-        constraint = (1.0 - (dissimilarity_func(i, m, alt_pos) / alpha))
+        constraint = (1.0 - (dissimilarity_func(i, m) / alpha))
 
         if constraint > 0:
             arg_sum += constraint
@@ -23,19 +23,10 @@ def neighborhood_func(i, j, alt_pos=None):
     return f_i
 
 
-def dissimilarity_func(i, m, alt_pos):
-    """ i = particle 1, m = particle 2
-     alt_pos = own position in case i is the currently carried particle with no position """
+def dissimilarity_func(i, m):
+    """ i = particle 1, m = particle 2 """
 
-    i_pos = None
-    if i.pos is None:
-        i_pos = alt_pos
-    else:
-        i_pos = i.pos
-
-    # dist = linalg.norm(asarray(i_pos) - asarray(m.pos)) - int(i.particle_type == m.particle_type)
-    dist = 1 - int(i.particle_type == m.particle_type)
-    return dist
+    return 1 - int(i.particle_type == m.particle_type)
 
 
 def p_pick(i, j):
@@ -50,10 +41,9 @@ def p_pick(i, j):
 
 
 def p_drop(i, j, alt_pos):
-    """ i = particle 1, j = all other particles in ant's proximity,
-    alt_pos = own position in case i is the currently carried particle with no position """
+    """ i = particle 1, j = all other particles in ant's proximity """
 
-    f_i = neighborhood_func(i, j, alt_pos)
+    f_i = neighborhood_func(i, j)
 
     if f_i >= 1.0:
         return 1.0
