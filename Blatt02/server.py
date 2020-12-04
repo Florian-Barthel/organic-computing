@@ -88,37 +88,45 @@ chart_entropy_ants_laden = ChartModule([{"Label": "Entropy ants laden",
                                        data_collector_name='datacollector')
 
 chart_entropy_particles = ChartModule([{"Label": "Entropy particles x",
-                                        "Color": "Black"}, {"Label": "Entropy particles y",
-                                                            "Color": "Gray"}],
+                                        "Color": "Black"},
+                                       {"Label": "Entropy particles y",
+                                        "Color": "Gray"}],
                                       data_collector_name='datacollector')
 
 chart_entropy_ants = ChartModule([{"Label": "Entropy ants x",
-                                   "Color": "Black"}, {"Label": "Entropy ants y",
-                                                       "Color": "Gray"}],
+                                   "Color": "Black"},
+                                  {"Label": "Entropy ants y",
+                                   "Color": "Gray"}],
                                  data_collector_name='datacollector')
 
 chart_emergence_particles = ChartModule([{"Label": "Emergence particles x",
-                                          "Color": "Black"}, {"Label": "Emergence particles y",
-                                                              "Color": "Gray"}],
+                                          "Color": "Black"},
+                                         {"Label": "Emergence particles y",
+                                          "Color": "Gray"}],
                                         data_collector_name='datacollector')
 
 chart_emergence_ants = ChartModule([{"Label": "Emergence ants x",
-                                     "Color": "Black"}, {"Label": "Emergence ants y",
-                                                         "Color": "Gray"}],
+                                     "Color": "Black"},
+                                    {"Label": "Emergence ants y",
+                                     "Color": "Gray"}],
                                    data_collector_name='datacollector')
 
-chart_emergence_particle_type = ChartModule([{"Label": "Emergence particles type",
-                                              "Color": "Black"}],
-                                            data_collector_name='datacollector')
+chart_emergence_particle_type = ChartModule(
+    [{"Label": "Emergence particles type",
+      "Color": "Black"}],
+    data_collector_name='datacollector')
 
 chart_emergence_ants_laden = ChartModule([{"Label": "Emergence ants laden",
                                            "Color": "Black"}],
                                          data_collector_name='datacollector')
 
 server = ModularServer(AntModel,
-                       [grid, chart_neighbors, chart_entropy_particle_type, chart_entropy_ants_laden,
-                        chart_entropy_particles, chart_entropy_ants, chart_emergence_particles,
-                        chart_emergence_ants, chart_emergence_particle_type, chart_emergence_ants_laden],
+                       [grid, chart_neighbors, chart_entropy_particle_type,
+                        chart_entropy_ants_laden,
+                        chart_entropy_particles, chart_entropy_ants,
+                        chart_emergence_particles,
+                        chart_emergence_ants, chart_emergence_particle_type,
+                        chart_emergence_ants_laden],
                        "Ant Model", model_params=model_params)
 
 server.port = 8521  # The default

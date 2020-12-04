@@ -31,7 +31,7 @@ def p_pick(i, j):
 
     f_i = neighborhood_func(i, j)
 
-    return (0.1 / (0.1 + f_i)) ** 2  # switched to default algorithm due to mistake in paper
+    return (0.1 / (0.1 + f_i)) ** 2  # switched to default algorithm
 
 
 def p_drop(i, j):
@@ -42,4 +42,7 @@ def p_drop(i, j):
     if f_i >= 1.0:
         return 1.0
     else:
-        return f_i ** 4  # sticking with paper-algorithm since it works (with the *100 tweak in agents.py)
+        return f_i ** 4
+
+    # sticking with paper-algorithm since it works
+    # (with the *100 tweak in agents.py)

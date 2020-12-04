@@ -3,7 +3,9 @@ import math
 
 
 def get_pos_entropy(model, max_size, agent_type, pos_index):
-    filtered_agents = list(filter(lambda a: type(a) is agent_type and a.pos is not None, model.schedule.agents))
+    filtered_agents = list(
+        filter(lambda a: type(a) is agent_type and a.pos is not None,
+               model.schedule.agents))
     entropy_sum = 0
     x_distribution = [0] * (max_size - 1)
 
@@ -23,7 +25,8 @@ def get_similar_surrounding_particles(model, agent):
         include_center=False,
         radius=1)
 
-    return list(filter(lambda c: isinstance(c, agents.ParticleAgent) and c.particle_type is agent.particle_type,
+    return list(filter(lambda c: isinstance(c,
+                                            agents.ParticleAgent) and c.particle_type is agent.particle_type,
                        cell_contents))
 
 
@@ -36,9 +39,12 @@ def entropy_particle_y(model):
 
 
 def entropy_particle_type(model):
-    particles = list(filter(lambda a: type(a) is agents.ParticleAgent and a.pos is not None, model.schedule.agents))
+    particles = list(
+        filter(lambda a: type(a) is agents.ParticleAgent and a.pos is not None,
+               model.schedule.agents))
     entropy_sum = 0
-    ptype_distribution = [0] * 9  # Moore -> max. 8 neighbors -> including 0 neighbors equals 9 options
+    ptype_distribution = [0] * 9  # Moore -> max. 8 neighbors -> including
+    # 0 neighbors equals 9 options
 
     for p in particles:
         similar_particles = get_similar_surrounding_particles(model, p)
@@ -67,7 +73,8 @@ def entropy_ant_y(model):
 
 
 def entropy_ant_laden(model):
-    ants = list(filter(lambda a: type(a) is agents.AntAgent, model.schedule.agents))
+    ants = list(
+        filter(lambda a: type(a) is agents.AntAgent, model.schedule.agents))
     entropy_sum = 0
     laden_distribution = [0] * 2  # Laden or not laden
 

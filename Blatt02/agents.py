@@ -1,7 +1,6 @@
 from mesa import Agent
 from functions import p_drop, p_pick
 
-
 PARTICLE_TYPE = ['Leaf', 'Nut', 'Stone']
 
 
@@ -42,7 +41,8 @@ class AntAgent(Agent):
             pick = 0
             while pick == 0.0 or self.random.random() >= pick:
                 p_rnd_tgt = self.get_random_particle()  # get random particle
-                self.model.grid.move_agent(self, p_rnd_tgt.pos)  # jump to particle
+                self.model.grid.move_agent(self,
+                                           p_rnd_tgt.pos)  # jump to particle
                 pick = p_pick(p_rnd_tgt, self.get_all_surrounding_particles())
 
             self.pickup_particle()
@@ -70,7 +70,7 @@ class AntAgent(Agent):
             radius=1)
 
         return list(filter(lambda c: isinstance(c, ParticleAgent),
-                    cell_contents))
+                           cell_contents))
 
     def drop_particle_nearby(self):
         all_steps = self.model.grid.get_neighborhood(
@@ -81,7 +81,8 @@ class AntAgent(Agent):
         possible_steps = []
         for ps in all_steps:
             cell_contents = self.model.grid.get_cell_list_contents([ps])
-            if len(cell_contents) == 0 or not any(type(c) is ParticleAgent for c in cell_contents):
+            if len(cell_contents) == 0 or not any(
+                    type(c) is ParticleAgent for c in cell_contents):
                 possible_steps.append(ps)
 
         if len(possible_steps) == 0:
@@ -106,7 +107,8 @@ class AntAgent(Agent):
         self.model.free_particles.remove(self.storage)
 
     def get_random_particle(self):
-        return self.model.free_particles[self.random.randrange(len(self.model.free_particles))]
+        return self.model.free_particles[
+            self.random.randrange(len(self.model.free_particles))]
 
 
 class ParticleAgent(Agent):
