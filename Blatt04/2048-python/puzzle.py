@@ -1,6 +1,7 @@
 from tkinter import Frame, Label, CENTER
 import random
 import sys
+from collections import namedtuple
 
 import logic
 import constants as c
@@ -46,7 +47,7 @@ class GameGrid(Frame):
     # CONTROL
     def reset(self):
         print("Resetting game")
-        self.grid_forget()
+        self.master.destroy()
         self.__init__()
 
     def init_grid(self):
@@ -75,8 +76,9 @@ class GameGrid(Frame):
             for j in range(c.GRID_LEN):
                 new_number = self.matrix[i][j]
                 if new_number == 0:
-                    self.grid_cells[i][j].configure(text="",
-                                                    bg=c.BACKGROUND_COLOR_CELL_EMPTY)
+                    self.grid_cells[i][j].configure(
+                        text="",
+                        bg=c.BACKGROUND_COLOR_CELL_EMPTY)
                 else:
                     self.grid_cells[i][j].configure(text=str(new_number),
                                                     bg=c.BACKGROUND_COLOR_DICT[
@@ -103,15 +105,19 @@ class GameGrid(Frame):
                 self.update_grid_cells()
                 if logic.game_state(self.matrix) == 'win':  # change cell
                     # indices to work with 2x2 grids
-                    self.grid_cells[0][0].configure(text="You",
-                                                    bg=c.BACKGROUND_COLOR_CELL_EMPTY)
-                    self.grid_cells[0][1].configure(text="Win!",
-                                                    bg=c.BACKGROUND_COLOR_CELL_EMPTY)
+                    self.grid_cells[0][0].configure(
+                        text="You",
+                        bg=c.BACKGROUND_COLOR_CELL_EMPTY)
+                    self.grid_cells[0][1].configure(
+                        text="Win!",
+                        bg=c.BACKGROUND_COLOR_CELL_EMPTY)
                 if logic.game_state(self.matrix) == 'lose':
-                    self.grid_cells[0][0].configure(text="You",
-                                                    bg=c.BACKGROUND_COLOR_CELL_EMPTY)
-                    self.grid_cells[0][1].configure(text="Lose!",
-                                                    bg=c.BACKGROUND_COLOR_CELL_EMPTY)
+                    self.grid_cells[0][0].configure(
+                        text="You",
+                        bg=c.BACKGROUND_COLOR_CELL_EMPTY)
+                    self.grid_cells[0][1].configure(
+                        text="Lose!",
+                        bg=c.BACKGROUND_COLOR_CELL_EMPTY)
         elif key == c.KEY_ESC:  # ESC for testing purposes
             self.reset()
 
@@ -134,7 +140,7 @@ class GameGrid(Frame):
 
     # OBSERVE
     def state(self):
-        gamestate = self.matrix
+        game_state = self.matrix
 
         max_val = 0  # get highest number for score
         for i in range(len(self.matrix)):
@@ -144,4 +150,7 @@ class GameGrid(Frame):
 
         is_over = logic.game_state(self.matrix) != 'not over'
 
-        return gamestate, max_val, is_over
+        return_tuple = namedtuple("return_tuple", ["game_state", "score",
+                                                   "is_over"])
+
+        return return_tuple(game_state, max_val, is_over)
