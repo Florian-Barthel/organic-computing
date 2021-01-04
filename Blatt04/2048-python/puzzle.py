@@ -12,11 +12,14 @@ def gen():
 
 
 class GameGrid(Frame):
-    def __init__(self):
+    def __init__(self, grid_len=0):
         Frame.__init__(self)
 
-        if len(sys.argv) > 1:  # use first command arg as int for grid length
+        if grid_len == 0 and len(sys.argv) > 1:  # use first command arg as
+            # int for grid length
             c.GRID_LEN = int(sys.argv[1])
+        elif grid_len > 0:
+            c.GRID_LEN = int(grid_len)
 
         print("Grid size: " + str(c.GRID_LEN))
 
@@ -84,28 +87,32 @@ class GameGrid(Frame):
 
     def key_down(self, event):
         key = repr(event.char)
+        self.process_input(key)
+
+    def process_input(self, key):
         if key == c.KEY_BACK and len(self.history_matrixs) > 1:
             self.matrix = self.history_matrixs.pop()
             self.update_grid_cells()
             print('back on step total step:', len(self.history_matrixs))
         elif key in self.commands:
-            self.matrix, done = self.commands[repr(event.char)](self.matrix)
+            self.matrix, done = self.commands[key](self.matrix)
             if done:
                 self.matrix = logic.add_two(self.matrix)
                 # record last move
                 self.history_matrixs.append(self.matrix)
                 self.update_grid_cells()
-                if logic.game_state(self.matrix) == 'win':
-                    self.grid_cells[1][1].configure(text="You",
+                if logic.game_state(self.matrix) == 'win':  # change cell
+                    # indices to work with 2x2 grids
+                    self.grid_cells[0][0].configure(text="You",
                                                     bg=c.BACKGROUND_COLOR_CELL_EMPTY)
-                    self.grid_cells[1][2].configure(text="Win!",
+                    self.grid_cells[0][1].configure(text="Win!",
                                                     bg=c.BACKGROUND_COLOR_CELL_EMPTY)
                 if logic.game_state(self.matrix) == 'lose':
-                    self.grid_cells[1][1].configure(text="You",
+                    self.grid_cells[0][0].configure(text="You",
                                                     bg=c.BACKGROUND_COLOR_CELL_EMPTY)
-                    self.grid_cells[1][2].configure(text="Lose!",
+                    self.grid_cells[0][1].configure(text="Lose!",
                                                     bg=c.BACKGROUND_COLOR_CELL_EMPTY)
-        elif event.keysym == 'Escape':  # just for testing purposes
+        elif key == c.KEY_ESC:  # ESC for testing purposes
             self.reset()
 
     def generate_next(self):
@@ -117,13 +124,13 @@ class GameGrid(Frame):
     # CONTROL
     def move(self, direction: Direction):
         if direction == Direction.LEFT:
-            logic.left(self.matrix)
+            self.process_input(c.KEY_LEFT)
         elif direction == Direction.RIGHT:
-            logic.right(self.matrix)
+            self.process_input(c.KEY_RIGHT)
         elif direction == Direction.UP:
-            logic.up(self.matrix)
+            self.process_input(c.KEY_UP)
         elif direction == Direction.DOWN:
-            logic.down(self.matrix)
+            self.process_input(c.KEY_DOWN)
 
     # OBSERVE
     def state(self):
@@ -138,10 +145,3 @@ class GameGrid(Frame):
         is_over = logic.game_state(self.matrix) != 'not over'
 
         return gamestate, max_val, is_over
-
-
-game_grid = GameGrid()
-game_grid.move(Direction.DOWN)
-print(game_grid.state())
-game_grid.reset()
-print(game_grid.state())
