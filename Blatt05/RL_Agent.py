@@ -2,7 +2,7 @@ from puzzle import GameGrid
 from constants import Direction
 
 from random import randint, random
-from numpy import arange
+import matplotlib.pyplot as plt
 
 
 class RLAgent:
@@ -16,10 +16,12 @@ class RLAgent:
         self.q = []
         self.states = []
         self.end_score = 0
+        self.uninit_q_decisions = 0
+        self.init_q_decisions = 0
 
     def update_q(self, s, a, max_q_next, reward):
         self.q[s][a] += self.learning_rate * (reward + self.discount_rate *
-                                          max_q_next - self.q[s][a])
+                                              max_q_next - self.q[s][a])
 
     def run_episode(self):
         iterations = 0
@@ -32,8 +34,10 @@ class RLAgent:
                 self.q.append([0, 0, 0, 0])
                 self.states.append(state.game_state)
                 current_state = state.game_state
+                self.uninit_q_decisions += 1
             else:
                 current_state = current_state[0]
+                self.init_q_decisions += 1
 
             state_i = self.states.index(current_state)
             next_action = self.q[state_i].index(max(self.q[state_i]))
@@ -43,7 +47,7 @@ class RLAgent:
 
             next_action = int(next_action)
 
-            self.greediness *= 0.9999
+            self.greediness -= (self.greediness - 0.1) * 0.0001
 
             self.game_grid.move(Direction(next_action + 1))
             state_after = self.game_grid.state()
@@ -68,7 +72,7 @@ class RLAgent:
                 self.update_q(self.states.index(current_state), next_action,
                               max_q_next, reward)
 
-            self.learning_rate *= 0.9999
+            self.learning_rate -= (self.learning_rate - 0.1) * 0.0001
 
         self.game_grid.master.destroy()
         del self.game_grid
@@ -83,33 +87,56 @@ def run_agent(gs, l, d, g, q, s, i):
     agent.states = s
     agent.run_episode()
 
-    # print("Episode #" + str(i+1) + ": e=" + str(agent.greediness) + ", "
-    #       "a=" + str(agent.learning_rate) + ", q-size=" + str(len(agent.q))
-    #       + ", score=" + str(agent.end_score))
+    print("Episode #" + str(i+1) + ": e=" + str(agent.greediness) + ", "
+           "a=" + str(agent.learning_rate) + ", q-size=" + str(len(agent.q))
+           + ", score=" + str(agent.end_score))
     return agent
 
 
-def run_strategy(l, d, g):
-    num_episodes = 100
-    score_total = 0
-    results = []
-    a = run_agent(2, l, d, g, [], [], 0)
+num_episodes = 10000
+score_total = 0
+results = []
+init_q_results = []
+uninit_q_results = []
+
+a = run_agent(2, 0.8, 0.5, 0.8, [], [], 0)
+results.append(a.end_score)
+q_result_total = a.init_q_decisions + a.uninit_q_decisions
+init_q_results.append(a.init_q_decisions / q_result_total)
+uninit_q_results.append((a.uninit_q_decisions / q_result_total))
+
+for i in range(num_episodes - 1):
+    prev_score = a.end_score
+    a = run_agent(2, a.learning_rate, a.discount_rate, a.greediness,
+                  a.q, a.states, i + 1)
     results.append(a.end_score)
-    for i in range(num_episodes-1):
-        prev_score = a.end_score
-        a = run_agent(2, a.learning_rate, a.discount_rate, a.greediness,
-                      a.q, a.states, i+1)
-        results.append(a.end_score)
+    q_result_total = a.init_q_decisions + a.uninit_q_decisions
+    init_q_results.append(a.init_q_decisions / q_result_total)
+    uninit_q_results.append((a.uninit_q_decisions / q_result_total))
+    i2 = i + 2
+    if i >= 100:
+        results[i2 - 1] = (sum(results[-100:]) / 100)
+        init_q_results[i2 - 1] = (sum(init_q_results[-100:]) / 100)
+        uninit_q_results[i2 - 1] = (sum(uninit_q_results[-100:]) / 100)
+    else:
+        results[i2 - 1] = (sum(results[-i2:]) / i2)
+        init_q_results[i2 - 1] = (sum(init_q_results[-i2:]) / i2)
+        uninit_q_results[i2 - 1] = (sum(uninit_q_results[-i2:]) / i2)
 
-    score_total = sum(results)
-    avg_score = score_total / num_episodes
-    return avg_score
-    # print("Average of " + str(num_episodes) + " episodes: " + str(avg_score))
+score_total = sum(results)
+avg_score = score_total / num_episodes
+print("Average of " + str(num_episodes) + " episodes: " + str(avg_score))
+print(a.q)
+plt.plot(results)
+plt.ylabel("Score")
+plt.xlabel("Episode")
+plt.title("RL Agent")
+plt.show()
 
-
-for l in arange(0.1, 1.0, 0.15):
-    for d in arange(0.15, 0.9, 0.15):
-        for g in arange(0.15, 0.9, 0.15):
-            s = run_strategy(l, d, g)
-            print("l=" + str(round(l, 2)) + ", d=" + str(round(d, 2)) + ", "
-                  "g=" + str(round(g, 2)) + " -> " + str(s))
+plt.plot(init_q_results, label="Initialized")
+plt.plot(uninit_q_results, label="Uninitialized")
+plt.ylabel("(Un)Initialized fraction of decisions")
+plt.xlabel("Episode")
+plt.title("RL Agent")
+plt.legend(loc="best")
+plt.show()
