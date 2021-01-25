@@ -67,19 +67,19 @@ class RLAgent:
         if s_sym is not None:
             q_s = self.q[s_sym]
             if lr:  # left-right symmetry
-                return [q_s[1], q_s[0], q_s[2], q_s[3]]
+                return [q_s[1], q_s[0], q_s[3], q_s[2]]
             else:  # up-down symmetry
-                return [q_s[0], q_s[1], q_s[3], q_s[2]]
+                return [q_s[2], q_s[3], q_s[0], q_s[1]]
 
         s_rot, k = self.get_rot_equal(state)
         if s_rot is not None:
             q_s = self.q[s_rot]
             if k == 1:  # rotated 90° once
-                return [q_s[3], q_s[2], q_s[0], q_s[1]]
+                return [q_s[1], q_s[3], q_s[0], q_s[2]]
             elif k == 2:  # rotated 90° twice
-                return [q_s[1], q_s[0], q_s[3], q_s[2]]
+                return [q_s[3], q_s[2], q_s[1], q_s[0]]
             elif k == 3:  # rotated 90° 3 times
-                return [q_s[2], q_s[3], q_s[1], q_s[0]]
+                return [q_s[2], q_s[0], q_s[3], q_s[1]]
 
         return None
 
@@ -97,7 +97,10 @@ class RLAgent:
                 self.uninit_q_decisions += 1
             else:
                 current_state = current_state[0]
-                self.init_q_decisions += 1
+                if self.q[self.states.index(current_state)] == [0, 0, 0, 0]:
+                    self.uninit_q_decisions += 1
+                else:
+                    self.init_q_decisions += 1
 
             state_i = self.states.index(current_state)
             next_action = self.q[state_i].index(max(self.q[state_i]))
@@ -107,7 +110,8 @@ class RLAgent:
 
             next_action = int(next_action)
 
-            self.greediness -= (self.greediness - 0.1) * 0.0001
+            if self.greediness > 0.010:
+                self.greediness -= (self.greediness - 0.01) * 0.00005
 
             self.game_grid.move(Direction(next_action + 1))
             state_after = self.game_grid.state()
@@ -131,7 +135,8 @@ class RLAgent:
                 self.update_q(self.states.index(current_state), next_action,
                               max_q_next, reward)
 
-            self.learning_rate -= (self.learning_rate - 0.1) * 0.0001
+            if self.learning_rate > 0.100:
+                self.learning_rate -= (self.learning_rate - 0.1) * 0.0001
 
         self.game_grid.master.destroy()
         del self.game_grid
@@ -153,7 +158,7 @@ def run_agent(gs, learn, d, g, q, s, index):
 
 
 grid_size = 2
-num_episodes = 100
+num_episodes = 10000
 score_total = 0
 results = []
 init_q_results = []
@@ -175,9 +180,9 @@ for i in range(num_episodes - 1):
     uninit_q_results.append((a.uninit_q_decisions / q_result_total))
     i2 = i + 2
     if i >= 100:
-        results[i2 - 1] = (sum(results[-100:]) / 100)
-        init_q_results[i2 - 1] = (sum(init_q_results[-100:]) / 100)
-        uninit_q_results[i2 - 1] = (sum(uninit_q_results[-100:]) / 100)
+        results[i2 - 1] = (sum(results[-99:]) / 99)
+        init_q_results[i2 - 1] = (sum(init_q_results[-99:]) / 99)
+        uninit_q_results[i2 - 1] = (sum(uninit_q_results[-99:]) / 99)
     else:
         results[i2 - 1] = (sum(results[-i2:]) / i2)
         init_q_results[i2 - 1] = (sum(init_q_results[-i2:]) / i2)
@@ -187,12 +192,13 @@ score_total = sum(results)
 avg_score = score_total / num_episodes
 print("Average of " + str(num_episodes) + " episodes: " + str(avg_score))
 
-for i in range(len(a.q)):
-    if sum(a.states[i][0]) > 4 or sum(a.states[i][1]) > 4 or\
-            4 in a.states[i][0] or 4 in a.states[i][1]:
-        continue
-    print(str(a.states[i]) + " -> " + str(a.q[i][0]) + " " + str(a.q[i][1]) +
-          " " + str(a.q[i][2]) + " " + str(a.q[i][3]))
+# Just here for task 1.6
+# for i in range(len(a.q)):
+#     if sum(a.states[i][0]) > 4 or sum(a.states[i][1]) > 4 or\
+#             4 in a.states[i][0] or 4 in a.states[i][1]:
+#         continue
+#     print(str(a.states[i]) + " -> " + str(a.q[i][0]) + " " + str(a.q[i][1]) +
+#           " " + str(a.q[i][2]) + " " + str(a.q[i][3]))
 
 plt.plot(results)
 plt.ylabel("Score")

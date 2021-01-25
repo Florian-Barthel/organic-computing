@@ -175,7 +175,7 @@ def merge(mat, done):
                 mat[i][j] *= 2
                 mat[i][j + 1] = 0
                 done = True
-                score_delta = mat[i][j]
+                score_delta += mat[i][j]
     return mat, done, score_delta
 
 
