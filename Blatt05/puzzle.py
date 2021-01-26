@@ -133,7 +133,7 @@ class GameGrid(Frame):
 
         is_over = logic.game_state(self.matrix) != 'not over'
 
-        return_tuple = namedtuple("return_tuple", ["game_state", "max_val",
-                                                   "score", "is_over"])
+        return_dict = {'game_state': game_state, 'max_val': max_val,
+                       'score': self.score, 'is_over': is_over}
 
-        return return_tuple(game_state, max_val, self.score, is_over)
+        return return_dict

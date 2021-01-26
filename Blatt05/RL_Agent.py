@@ -88,20 +88,22 @@ class RLAgent:
         while True:
             state = self.game_grid.state()
 
-            current_state = [s for s in self.states if state.game_state == s]
+            current_state = [s for s in self.states if state['game_state'] == s]
+            state_i = -1
             if not current_state:
                 self.q.append([0, 0, 0, 0])
-                self.states.append(state.game_state)
-                current_state = state.game_state
+                self.states.append(state['game_state'])
+                current_state = state['game_state']
                 self.uninit_q_decisions += 1
+                state_i = self.states.index(current_state)
             else:
                 current_state = current_state[0]
-                if self.q[self.states.index(current_state)] == [0, 0, 0, 0]:
+                state_i = self.states.index(current_state)
+                if self.q[state_i] == [0, 0, 0, 0]:
                     self.uninit_q_decisions += 1
                 else:
                     self.init_q_decisions += 1
 
-            state_i = self.states.index(current_state)
             next_action = self.q[state_i].index(max(self.q[state_i]))
 
             if random() < self.greediness:
@@ -112,21 +114,21 @@ class RLAgent:
             self.game_grid.move(str(Direction(next_action + 1)).lower()
                                 .split('.')[1])
             state_after = self.game_grid.state()
-            reward = state_after.score - state.score
-            if current_state == state_after.game_state:
+            reward = state_after['score'] - state['score']
+            if current_state == state_after['game_state']:
                 reward = -10
 
-            exists = self.is_state_known(state_after.game_state)
-            new_state = state_after.game_state
+            exists = self.is_state_known(state_after['game_state'])
+            new_state = state_after['game_state']
             if not exists:
                 self.q.append([0, 0, 0, 0])
-                self.states.append(state_after.game_state)
-                new_state = state_after.game_state
+                self.states.append(state_after['game_state'])
+                new_state = state_after['game_state']
 
             iterations += 1
 
-            if state_after.is_over:
-                self.end_score = state_after.score
+            if state_after['is_over']:
+                self.end_score = state_after['score']
                 self.get_q_rot_sym(new_state)[next_action] = 0
                 break
             else:
