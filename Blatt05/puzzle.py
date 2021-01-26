@@ -5,7 +5,10 @@ from collections import namedtuple
 
 import logic
 import constants as c
-from constants import Direction
+
+# from constants import Direction
+
+visual = False
 
 
 def gen():
@@ -16,6 +19,7 @@ class GameGrid(Frame):
     def __init__(self, grid_len=0):
         Frame.__init__(self)
 
+        self.grid_len = grid_len
         if grid_len == 0 and len(sys.argv) > 1:  # use first command arg as
             # int for grid length
             c.GRID_LEN = int(sys.argv[1])
@@ -36,8 +40,15 @@ class GameGrid(Frame):
                          c.KEY_H: logic.left, c.KEY_L: logic.right,
                          c.KEY_K: logic.up, c.KEY_J: logic.down}
 
+        self.auto_commands = {'up': logic.up,
+                              'down': logic.down,
+                              'left': logic.left,
+                              'right': logic.right
+                              }
+
         self.grid_cells = []
-        self.init_grid()
+        if visual:
+            self.init_grid()
         self.matrix = logic.new_game(c.GRID_LEN)
         self.history_matrixs = []
         self.update_grid_cells()
@@ -47,9 +58,10 @@ class GameGrid(Frame):
 
     # CONTROL
     def reset(self):
-        print("Resetting game")
-        self.master.destroy()
-        self.__init__()
+        if visual:
+            self.init_grid()
+        self.matrix = logic.new_game(self.grid_len)
+        self.score = 0
 
     def init_grid(self):
         background = Frame(self, bg=c.BACKGROUND_COLOR_GAME,
@@ -73,6 +85,8 @@ class GameGrid(Frame):
             self.grid_cells.append(grid_row)
 
     def update_grid_cells(self):
+        if not visual:
+            return
         for i in range(c.GRID_LEN):
             for j in range(c.GRID_LEN):
                 new_number = self.matrix[i][j]
@@ -89,39 +103,8 @@ class GameGrid(Frame):
         # self.update_idletasks()
 
     def key_down(self, event):
-        key = repr(event.char)
-        self.process_input(key)
-
-    def process_input(self, key):
-        if key == c.KEY_BACK and len(self.history_matrixs) > 1:
-            self.matrix = self.history_matrixs.pop()
-            self.update_grid_cells()
-            print('back on step total step:', len(self.history_matrixs))
-        elif key in self.commands:
-            self.matrix, done, score_delta = self.commands[key](self.matrix)
-            if done:
-                self.score += score_delta
-                self.matrix = logic.add_two(self.matrix)
-                # record last move
-                self.history_matrixs.append(self.matrix)
-                self.update_grid_cells()
-                if logic.game_state(self.matrix) == 'win':  # change cell
-                    # indices to work with 2x2 grids
-                    self.grid_cells[0][0].configure(
-                        text="You",
-                        bg=c.BACKGROUND_COLOR_CELL_EMPTY)
-                    self.grid_cells[0][1].configure(
-                        text="Win!",
-                        bg=c.BACKGROUND_COLOR_CELL_EMPTY)
-                if logic.game_state(self.matrix) == 'lose':
-                    self.grid_cells[0][0].configure(
-                        text="You",
-                        bg=c.BACKGROUND_COLOR_CELL_EMPTY)
-                    self.grid_cells[0][1].configure(
-                        text="Lose!",
-                        bg=c.BACKGROUND_COLOR_CELL_EMPTY)
-        elif key == c.KEY_ESC:  # ESC for testing purposes
-            self.reset()
+        pass
+        # not needed anymore for non-GUI usage
 
     def generate_next(self):
         index = (gen(), gen())
@@ -130,15 +113,13 @@ class GameGrid(Frame):
         self.matrix[index[0]][index[1]] = 2
 
     # CONTROL
-    def move(self, direction: Direction):
-        if direction == Direction.LEFT:
-            self.process_input(c.KEY_LEFT)
-        elif direction == Direction.RIGHT:
-            self.process_input(c.KEY_RIGHT)
-        elif direction == Direction.UP:
-            self.process_input(c.KEY_UP)
-        elif direction == Direction.DOWN:
-            self.process_input(c.KEY_DOWN)
+    def move(self, direction):
+        self.matrix, done, increase_score = self.auto_commands[direction](
+            self.matrix)
+        self.score += increase_score
+        if done:
+            self.matrix = logic.add_two(self.matrix)
+            self.update_grid_cells()
 
     # OBSERVE
     def state(self):

@@ -8,9 +8,8 @@ import numpy as np
 
 class RLAgent:
 
-    def __init__(self, grid_len=0):
-        self.game_grid = GameGrid(grid_len)
-
+    def __init__(self, gamegrid_obj):
+        self.game_grid = gamegrid_obj
         self.learning_rate = 0.9  # alpha
         self.discount_rate = 0.1  # gamma
         self.greediness = 0.9  # epsilon
@@ -110,12 +109,12 @@ class RLAgent:
 
             next_action = int(next_action)
 
-            if self.greediness > 0.010:
-                self.greediness -= (self.greediness - 0.01) * 0.00005
-
-            self.game_grid.move(Direction(next_action + 1))
+            self.game_grid.move(str(Direction(next_action + 1)).lower()
+                                .split('.')[1])
             state_after = self.game_grid.state()
             reward = state_after.score - state.score
+            if current_state == state_after.game_state:
+                reward = -10
 
             exists = self.is_state_known(state_after.game_state)
             new_state = state_after.game_state
@@ -135,36 +134,38 @@ class RLAgent:
                 self.update_q(self.states.index(current_state), next_action,
                               max_q_next, reward)
 
-            if self.learning_rate > 0.100:
-                self.learning_rate -= (self.learning_rate - 0.1) * 0.0001
-
-        self.game_grid.master.destroy()
-        del self.game_grid
-
-
-def run_agent(gs, learn, d, g, q, s, index):
-    agent = RLAgent(gs)
-    agent.learning_rate = learn
-    agent.discount_rate = d
-    agent.greediness = g
-    agent.q = q
-    agent.states = s
-    agent.run_episode()
-
-    print("Episode #" + str(index + 1) + ": e=" + str(agent.greediness) +
-          ", a=" + str(agent.learning_rate) + ", q-size=" + str(len(agent.q))
-          + ", score=" + str(agent.end_score))
-    return agent
+        self.game_grid.reset()
 
 
 grid_size = 2
 num_episodes = 10000
+alpha_decay = 0.95
+epsilon_decay = 0.95
 score_total = 0
 results = []
 init_q_results = []
 uninit_q_results = []
+gamegrid = GameGrid(grid_size)
 
-a = run_agent(grid_size, 0.8, 0.5, 0.8, [], [], 0)
+
+def run_agent(learn, d, g, q, s, index):
+    agent = RLAgent(gamegrid)
+    agent.learning_rate = learn
+    agent.greediness = g
+    agent.discount_rate = d
+    agent.q = q
+    agent.states = s
+    agent.run_episode()
+
+    if index % 100 == 0:
+        print("Episode #" + str(index + 1) + ": e=" + str(agent.greediness) +
+              ", a=" + str(agent.learning_rate) + ", q-size=" + str(
+            len(agent.q))
+              + ", score=" + str(agent.end_score))
+    return agent
+
+
+a = run_agent(0.1, 0.4, 0.6, [], [], 0)
 results.append(a.end_score)
 q_result_total = a.init_q_decisions + a.uninit_q_decisions
 init_q_results.append(a.init_q_decisions / q_result_total)
@@ -172,8 +173,12 @@ uninit_q_results.append((a.uninit_q_decisions / q_result_total))
 
 for i in range(num_episodes - 1):
     prev_score = a.end_score
-    a = run_agent(grid_size, a.learning_rate, a.discount_rate, a.greediness,
+    if i % 100 == 0:
+        a.learning_rate *= alpha_decay
+        a.greediness *= epsilon_decay
+    a = run_agent(a.learning_rate, a.discount_rate, a.greediness,
                   a.q, a.states, i + 1)
+
     results.append(a.end_score)
     q_result_total = a.init_q_decisions + a.uninit_q_decisions
     init_q_results.append(a.init_q_decisions / q_result_total)
@@ -193,12 +198,12 @@ avg_score = score_total / num_episodes
 print("Average of " + str(num_episodes) + " episodes: " + str(avg_score))
 
 # Just here for task 1.6
-# for i in range(len(a.q)):
-#     if sum(a.states[i][0]) > 4 or sum(a.states[i][1]) > 4 or\
-#             4 in a.states[i][0] or 4 in a.states[i][1]:
-#         continue
-#     print(str(a.states[i]) + " -> " + str(a.q[i][0]) + " " + str(a.q[i][1]) +
-#           " " + str(a.q[i][2]) + " " + str(a.q[i][3]))
+for i in range(len(a.q)):
+    if sum(a.states[i][0]) > 4 or sum(a.states[i][1]) > 4 or \
+            4 in a.states[i][0] or 4 in a.states[i][1]:
+        continue
+    print(str(a.states[i]) + " -> " + str(a.q[i][0]) + " " + str(a.q[i][1]) +
+          " " + str(a.q[i][2]) + " " + str(a.q[i][3]))
 
 plt.plot(results)
 plt.ylabel("Score")
